@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Play
+{% endblock %}
+
+{% block main %}
+    <form action="/" method="post">
+        <div>
+            <input type="hidden" name="answer" id="answer" value="{{ constituency["constituency"] }}">
+        </div>
+        <div class="mb-3">
+            <p>{{ constituency["MP"] }}, {{ constituency["party"] }}</p>
+        </div>
+        <div class="mb-3">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="constituency" name="constituency" placeholder="Constituency" type="text">
+        </div>
+        <button class="btn btn-primary" type="submit" id="submit">Submit</button>
+        <input type="hidden" name="score" value="{{ score }}">
+        <input type="hidden" name="name" value="{{ constituency["MP"] }}">
+    </form>
+    <div>
+        <p>Current score: {{ score }}</p>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Game over!
+{% endblock %}
+
+{% block main %}
+    <div>
+        <p>Game over! Your score was: {{ score }}. {{ name }} is the MP for {{ answer }}.</p>
+    </div>
+    <div>
+        <a href="/"><button class="btn btn-primary">Play again</button></a>
+    </div>
+{% endblock %}

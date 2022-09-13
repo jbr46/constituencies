@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Personal bests
+{% endblock %}
+
+{% block main %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th class="text-start">Rank</th>
+                <th class="text-start">Score</th>
+                <th class="text-end">Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for best in bests %}
+            <tr>
+                <td class="text-start">{{ loop.index }}</td>
+                <td class="text-start">{{ best["score"] }}</td>
+                <td class="text-end">{{ best["date"] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
