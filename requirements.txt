@@ -1,4 +1,5 @@
 cs50
-Flask
+Flask==2.1.0
+gunicorn==20.1.0
 Flask-Session
 requests
