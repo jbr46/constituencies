@@ -53,6 +53,14 @@
             </div>
         </nav>
         
+        {% if session.get("user_id") == None %}
+        <header>
+            <div class="alert alert-primary mb-0 text-center" role="alert">
+                You are currently playing as a guest. Log in to save your scores!
+            </div>
+        </header>
+        {% endif %}
+        
         <main class="container-fluid py-5 text-center">
             {% block main %}{% endblock %}
         </main>
