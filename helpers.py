@@ -52,7 +52,6 @@ def generate_constituency():
             constituency = cursor.fetchone()
 
     #constituency = db.execute("SELECT MP, party, constituency FROM constituencies WHERE id = ?", random.randint(0, 648))[0]
-    connection.close()
     return constituency
 
 def get_personal_bests(id):
