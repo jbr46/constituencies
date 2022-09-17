@@ -21,7 +21,7 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-connection = pymysql.connect(host='34.68.42.218',
+connection = pymysql.connect(unix_socket='/cloudsql/adept-lodge-362420:us-central1:constituencies',
                              user='jbr46',
                              password='constituencies',
                              database='constituencies',
