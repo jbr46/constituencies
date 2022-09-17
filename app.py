@@ -136,7 +136,7 @@ def register():
             with connection.cursor() as cursor:
                 sql = "SELECT COUNT(id) FROM `users` WHERE `username` = %s"
                 cursor.execute(sql, (username),)
-                check = cursor.fetchone()[0]["COUNT(id)"]
+                check = cursor.fetchone()["COUNT(id)"]
 
             #check = db.execute("SELECT COUNT(id) FROM users WHERE username = ?", username)[0]["COUNT(id)"]
             if check:
