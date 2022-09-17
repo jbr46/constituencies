@@ -55,7 +55,7 @@ def play():
             else:
                 with connection:
                     with connection.cursor() as cursor:
-                        sql = "SELECT `username` FROM `users` WHERE `id` = %i"
+                        sql = "SELECT `username` FROM `users` WHERE `id` = %s"
                         cursor.execute(sql, (session["user_id"],))
                         username = cursor.fetchone()
                 add_bests(score, username, session["user_id"], get_personal_bests(session["user_id"]))
