@@ -1,7 +1,8 @@
 import os
 import datetime
+import pymysql.cursors
 
-from cs50 import SQL
+
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp
@@ -20,8 +21,13 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-# Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///constituencies.db")
+connection = pymysql.connect(host='34.68.42.218',
+                             user='jbr46',
+                             password='constituencies',
+                             database='constituencies',
+                             charset='utf8',
+                             cursorclass=pymysql.cursors.DictCursor)
+
 
 @app.after_request
 def after_request(response):
@@ -47,7 +53,11 @@ def play():
             if session.get("user_id") is None:
                 add_bests(score, "Guest", -1, get_bests())
             else:
-                username = db.execute("SELECT username FROM users WHERE id = ?", session["user_id"])[0]["username"]
+                with connection:
+                    with connection.cursor() as cursor:
+                        sql = "SELECT `username` FROM `users` WHERE `id` = %i"
+                        cursor.execute(sql, (session["user_id"],))
+                        username = cursor.fetchone()
                 add_bests(score, username, session["user_id"], get_personal_bests(session["user_id"]))
             return render_template("game_over.html", score=score, name=name, answer=answer)
 
@@ -75,7 +85,11 @@ def login():
             return apology("must provide password", 403)
 
         # Query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
+        with connection:
+            with connection.cursor() as cursor:
+                sql = "SELECT * FROM `users` WHERE `username` = %s"
+                cursor.execute(sql, (request.form.get("username"),))
+                rows = cursor.fetchone()
 
         # Ensure username exists and password is correct
         if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
@@ -104,38 +118,50 @@ def logout():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
-    # Forget any user_id
-    session.clear()
+    with connection:
+        # Forget any user_id
+        session.clear()
 
-    # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
+        # User reached route via POST (as by submitting a form via POST)
+        if request.method == "POST":
 
-        username = request.form.get("username")
-        password = request.form.get("password")
+            username = request.form.get("username")
+            password = request.form.get("password")
 
-        # Ensure username was submitted
-        if not username:
-            return apology("must provide username", 400)
+            # Ensure username was submitted
+            if not username:
+                return apology("must provide username", 400)
 
-        # Ensure username not already taken
-        check = db.execute("SELECT COUNT(id) FROM users WHERE username = ?", username)[0]["COUNT(id)"]
-        if check:
-            return apology("username already taken", 400)
+            # Ensure username not already taken
+            with connection.cursor() as cursor:
+                sql = "SELECT COUNT(id) FROM `users` WHERE `username` = %s"
+                cursor.execute(sql, (username),)
+                check = cursor.fetchone()[0]["COUNT(id)"]
 
-        # Ensure password was submitted
-        if not password or not request.form.get("confirmation"):
-            return apology("must provide password", 400)
+            #check = db.execute("SELECT COUNT(id) FROM users WHERE username = ?", username)[0]["COUNT(id)"]
+            if check:
+                return apology("username already taken", 400)
 
-        # Check passwords match
-        if password != request.form.get("confirmation"):
-            return apology("passwords do not match", 400)
+            # Ensure password was submitted
+            if not password or not request.form.get("confirmation"):
+                return apology("must provide password", 400)
 
-        db.execute("INSERT INTO users (username, hash) VALUES (?, ?)", username, generate_password_hash(password))
+            # Check passwords match
+            if password != request.form.get("confirmation"):
+                return apology("passwords do not match", 400)
 
-        return redirect("/login")
+            
+            with connection.cursor() as cursor:
+                sql = "INSERT INTO `users` (`username`, `hash`) VALUES (%s, %s)"
+                cursor.execute(sql, (username, generate_password_hash(password),))
+            connection.commit()
 
-    else:
-        return render_template("register.html")
+            #db.execute("INSERT INTO users (username, hash) VALUES (?, ?)", username, generate_password_hash(password))
+
+            return redirect("/login")
+
+        else:
+            return render_template("register.html")
 
 @app.route("/bests")
 @login_required
