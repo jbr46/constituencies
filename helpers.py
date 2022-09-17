@@ -8,7 +8,7 @@ from flask import redirect, render_template, request, session
 from functools import wraps
 from datetime import datetime
 
-connection = pymysql.connect(unix_socket='/cloudsql/adept-lodge-362420:us-central1:constituencies',
+connection = pymysql.connect(unix_socket='/cloudsql/adept-lodge-362420:us-central1:constituencies'
                              user='jbr46',
                              password='constituencies',
                              database='constituencies',
@@ -47,11 +47,12 @@ def login_required(f):
 def generate_constituency():
     with connection:
         with connection.cursor() as cursor:
-            sql = "SELECT `MP`, `party`, `constituency` FROM `constituencies` WHERE `id` = %s"
+            sql = "SELECT `MP`, `party`, `constituency` FROM `constituencies` WHERE `id` = %i"
             cursor.execute(sql, (random.randint(0, 648),))
             constituency = cursor.fetchone()
 
     #constituency = db.execute("SELECT MP, party, constituency FROM constituencies WHERE id = ?", random.randint(0, 648))[0]
+    connection.close()
     return constituency
 
 def get_personal_bests(id):
@@ -62,6 +63,7 @@ def get_personal_bests(id):
             bests = cursor.fetchone()
 
     #bests = db.execute("SELECT score, date FROM bests WHERE id = ? ORDER BY score DESC LIMIT 5", id)
+    connection.close()
     return bests
 
 def add_bests(score, username, id, bests):
@@ -70,16 +72,17 @@ def add_bests(score, username, id, bests):
         try:
             if score > bests[4]["score"]:
                 with connection.cursor() as cursor:
-                    sql = "INSERT INTO `bests` (`score`, `date`, `username`, `id`) VALUES (%s, %s, %s, %s)"
+                    sql = "INSERT INTO `bests` (`score`, `date`, `username`, `id`) VALUES (%i, %s, %s, %i)"
                     cursor.execute(sql, (score, now.strftime("%d/%m/%Y"), username, id,))
                 connection.commit()
 
                 #db.execute("INSERT INTO bests (score, date, username, id) VALUES (?, ?, ?, ?)", score, now.strftime("%d/%m/%Y"), username, id)
         except IndexError:
                 with connection.cursor() as cursor:
-                    sql = "INSERT INTO `bests` (`score`, `date`, `username`, `id`) VALUES (%s, %s, %s, %s)"
+                    sql = "INSERT INTO `bests` (`score`, `date`, `username`, `id`) VALUES (%i, %s, %s, %i)"
                     cursor.execute(sql, (score, now.strftime("%d/%m/%Y"), username, id,))
                 connection.commit()
+    connection.close()
     return
 
 def get_bests():
@@ -88,6 +91,6 @@ def get_bests():
             sql = "SELECT `score`, `username`, `date` FROM `bests` ORDER BY `score` DESC LIMIT 5"
             cursor.execute(sql)
             bests = cursor.fetchone()
+    connection.close()
     return bests
-
 
