@@ -8,7 +8,7 @@ from flask import redirect, render_template, request, session
 from functools import wraps
 from datetime import datetime
 
-connection = pymysql.connect(unix_socket='/cloudsql/adept-lodge-362420:us-central1:constituencies'
+connection = pymysql.connect(unix_socket='/cloudsql/adept-lodge-362420:us-central1:constituencies',
                              user='jbr46',
                              password='constituencies',
                              database='constituencies',
