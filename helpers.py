@@ -45,11 +45,10 @@ def login_required(f):
     return decorated_function
 
 def generate_constituency():
-    with connection:
-        with connection.cursor() as cursor:
-            sql = "SELECT `MP`, `party`, `constituency` FROM `constituencies` WHERE `id` = %s"
-            cursor.execute(sql, (random.randint(0, 648),))
-            constituency = cursor.fetchone()
+  with connection.cursor() as cursor:
+    sql = "SELECT `MP`, `party`, `constituency` FROM `constituencies` WHERE `id` = %s"
+    cursor.execute(sql, (random.randint(0, 648),))
+    constituency = cursor.fetchone()
 
     #constituency = db.execute("SELECT MP, party, constituency FROM constituencies WHERE id = ?", random.randint(0, 648))[0]
     return constituency
