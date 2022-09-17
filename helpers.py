@@ -47,7 +47,7 @@ def login_required(f):
 def generate_constituency():
     with connection:
         with connection.cursor() as cursor:
-            sql = "SELECT `MP`, `party`, `constituency` FROM `constituencies` WHERE `id` = %i"
+            sql = "SELECT `MP`, `party`, `constituency` FROM `constituencies` WHERE `id` = %s"
             cursor.execute(sql, (random.randint(0, 648),))
             constituency = cursor.fetchone()[0]
 
@@ -70,14 +70,14 @@ def add_bests(score, username, id, bests):
         try:
             if score > bests[4]["score"]:
                 with connection.cursor() as cursor:
-                    sql = "INSERT INTO `bests` (`score`, `date`, `username`, `id`) VALUES (%i, %s, %s, %i)"
+                    sql = "INSERT INTO `bests` (`score`, `date`, `username`, `id`) VALUES (%s, %s, %s, %s)"
                     cursor.execute(sql, (score, now.strftime("%d/%m/%Y"), username, id,))
                 connection.commit()
 
                 #db.execute("INSERT INTO bests (score, date, username, id) VALUES (?, ?, ?, ?)", score, now.strftime("%d/%m/%Y"), username, id)
         except IndexError:
                 with connection.cursor() as cursor:
-                    sql = "INSERT INTO `bests` (`score`, `date`, `username`, `id`) VALUES (%i, %s, %s, %i)"
+                    sql = "INSERT INTO `bests` (`score`, `date`, `username`, `id`) VALUES (%s, %s, %s, %s)"
                     cursor.execute(sql, (score, now.strftime("%d/%m/%Y"), username, id,))
                 connection.commit()
     return
