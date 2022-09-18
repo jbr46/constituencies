@@ -21,13 +21,6 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-connection = pymysql.connect(unix_socket='/cloudsql/adept-lodge-362420:us-central1:constituencies',
-                             user='jbr46',
-                             password='constituencies',
-                             database='constituencies',
-                             charset='utf8',
-                             cursorclass=pymysql.cursors.DictCursor)
-
 
 @app.after_request
 def after_request(response):
@@ -53,13 +46,18 @@ def play():
             if session.get("user_id") is None:
                 add_bests(score, "Guest", -1, get_bests())
             else:
-                with connection:
-                    with connection.cursor() as cursor:
-                        sql = "SELECT `username` FROM `users` WHERE `id` = %s"
-                        cursor.execute(sql, (session["user_id"],))
-                        username = cursor.fetchone()
+                connection = pymysql.connect(unix_socket='/cloudsql/adept-lodge-362420:us-central1:constituencies',
+                             user='jbr46',
+                             password='constituencies',
+                             database='constituencies',
+                             charset='utf8',
+                             cursorclass=pymysql.cursors.DictCursor)
+                with connection.cursor() as cursor:
+                    sql = "SELECT `username` FROM `users` WHERE `id` = %s"
+                    cursor.execute(sql, (session["user_id"],))
+                    username = cursor.fetchone()["username"]
+                connection.close()
                 add_bests(score, username, session["user_id"], get_personal_bests(session["user_id"]))
-            connection.close()
             return render_template("game_over.html", score=score, name=name, answer=answer)
 
     else:
@@ -86,11 +84,16 @@ def login():
             return apology("must provide password", 403)
 
         # Query database for username
-        with connection:
-            with connection.cursor() as cursor:
-                sql = "SELECT * FROM `users` WHERE `username` = %s"
-                cursor.execute(sql, (request.form.get("username"),))
-                rows = cursor.fetchone()
+        connection = pymysql.connect(unix_socket='/cloudsql/adept-lodge-362420:us-central1:constituencies',
+                             user='jbr46',
+                             password='constituencies',
+                             database='constituencies',
+                             charset='utf8',
+                             cursorclass=pymysql.cursors.DictCursor)
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM `users` WHERE `username` = %s"
+            cursor.execute(sql, (request.form.get("username"),))
+            rows = cursor.fetchall()
         connection.close()
 
         # Ensure username exists and password is correct
@@ -125,46 +128,51 @@ def register():
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-        with connection:
+        connection = pymysql.connect(unix_socket='/cloudsql/adept-lodge-362420:us-central1:constituencies',
+                             user='jbr46',
+                             password='constituencies',
+                             database='constituencies',
+                             charset='utf8',
+                             cursorclass=pymysql.cursors.DictCursor)
 
-            username = request.form.get("username")
-            password = request.form.get("password")
+        username = request.form.get("username")
+        password = request.form.get("password")
 
-            # Ensure username was submitted
-            if not username:
-                connection.close()
-                return apology("must provide username", 400)
-
-            # Ensure username not already taken
-            with connection.cursor() as cursor:
-                sql = "SELECT COUNT(id) FROM `users` WHERE `username` = %s"
-                cursor.execute(sql, (username),)
-                check = cursor.fetchone()["COUNT(id)"]
-
-            #check = db.execute("SELECT COUNT(id) FROM users WHERE username = ?", username)[0]["COUNT(id)"]
-            if check:
-                connection.close()
-                return apology("username already taken", 400)
-
-            # Ensure password was submitted
-            if not password or not request.form.get("confirmation"):
-                connection.close()
-                return apology("must provide password", 400)
-
-            # Check passwords match
-            if password != request.form.get("confirmation"):
-                connection.close()
-                return apology("passwords do not match", 400)
-
-                
-            with connection.cursor() as cursor:
-                sql = "INSERT INTO `users` (`username`, `hash`) VALUES (%s, %s)"
-                cursor.execute(sql, (username, generate_password_hash(password),))
-            connection.commit()
-
-            #db.execute("INSERT INTO users (username, hash) VALUES (?, ?)", username, generate_password_hash(password))
+        # Ensure username was submitted
+        if not username:
             connection.close()
-            return redirect("/login")
+            return apology("must provide username", 400)
+
+        # Ensure username not already taken
+        with connection.cursor() as cursor:
+            sql = "SELECT COUNT(id) FROM `users` WHERE `username` = %s"
+            cursor.execute(sql, (username),)
+            check = cursor.fetchone()["COUNT(id)"]
+
+        #check = db.execute("SELECT COUNT(id) FROM users WHERE username = ?", username)[0]["COUNT(id)"]
+        if check:
+            connection.close()
+            return apology("username already taken", 400)
+
+        # Ensure password was submitted
+        if not password or not request.form.get("confirmation"):
+            connection.close()
+            return apology("must provide password", 400)
+
+        # Check passwords match
+        if password != request.form.get("confirmation"):
+            connection.close()
+            return apology("passwords do not match", 400)
+
+            
+        with connection.cursor() as cursor:
+            sql = "INSERT INTO `users` (`username`, `hash`) VALUES (%s, %s)"
+            cursor.execute(sql, (username, generate_password_hash(password),))
+        connection.commit()
+
+        #db.execute("INSERT INTO users (username, hash) VALUES (?, ?)", username, generate_password_hash(password))
+        connection.close()
+        return redirect("/login")
 
     else:
         return render_template("register.html")
