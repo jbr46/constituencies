@@ -38,22 +38,32 @@ def login_required(f):
     return decorated_function
 
 def generate_constituency():
-    with connection:
-        with connection.cursor() as cursor:
-            sql = "SELECT `MP`, `party`, `constituency` FROM `constituencies` WHERE `id` = %s"
-            cursor.execute(sql, (random.randint(0, 648),))
-            constituency = cursor.fetchone()
+    connection = pymysql.connect(unix_socket='/cloudsql/adept-lodge-362420:us-central1:constituencies',
+                             user='jbr46',
+                             password='constituencies',
+                             database='constituencies',
+                             charset='utf8',
+                             cursorclass=pymysql.cursors.DictCursor)
+    with connection.cursor() as cursor:
+        sql = "SELECT `MP`, `party`, `constituency` FROM `constituencies` WHERE `id` = %s"
+        cursor.execute(sql, (random.randint(0, 648),))
+        constituency = cursor.fetchone()
 
     #constituency = db.execute("SELECT MP, party, constituency FROM constituencies WHERE id = ?", random.randint(0, 648))[0]
     connection.close()
     return constituency
 
 def get_personal_bests(id):
-    with connection:
-        with connection.cursor() as cursor:
-            sql = "SELECT `score`, `date` FROM `bests` WHERE `id` = %s ORDER BY `score` DESC LIMIT 5"
-            cursor.execute(sql, (id,))
-            bests = cursor.fetchall()
+    connection = pymysql.connect(unix_socket='/cloudsql/adept-lodge-362420:us-central1:constituencies',
+                             user='jbr46',
+                             password='constituencies',
+                             database='constituencies',
+                             charset='utf8',
+                             cursorclass=pymysql.cursors.DictCursor)
+    with connection.cursor() as cursor:
+        sql = "SELECT `score`, `date` FROM `bests` WHERE `id` = %s ORDER BY `score` DESC LIMIT 5"
+        cursor.execute(sql, (id,))
+        bests = cursor.fetchall()
 
     #bests = db.execute("SELECT score, date FROM bests WHERE id = ? ORDER BY score DESC LIMIT 5", id)
     connection.close()
